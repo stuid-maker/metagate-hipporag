@@ -1,0 +1,44 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+.venv/
+.python-version
+.uv-cache/
+
+# Python caches and test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Downloaded upstream source and datasets
+third_party/HippoRAG/
+data/raw/
+data/processed/
+
+# Generated experiment state
+artifacts/batch/
+artifacts/cache/
+artifacts/indexes/
+artifacts/runs/
+artifacts/tmp/
+*.sqlite
+*.sqlite-lock
+
+# Generated deliverables; stable final sources are committed separately
+output/
+paper/rendered/
+slides/rendered/
+
+# Local course brief supplied outside the research repository
+/认知科学导论结课材料2026.5.pdf
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
