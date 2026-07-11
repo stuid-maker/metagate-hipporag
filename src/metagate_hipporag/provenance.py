@@ -397,3 +397,96 @@ class UsageLedger:
                 (snap.model_dump_json(),),
             )
             conn.commit()
+
+
+# ── Immutable index fingerprint ──────────────────────────────────────────────
+
+_INDEX_PARAM_KEYS = frozenset(
+    {
+        "corpus_sha256",
+        "upstream_sha",
+        "upstream_package_version",
+        "compatibility_patch_sha256",
+        "preprocessing_version",
+        "openie_ner_prompt_sha256",
+        "openie_triple_prompt_sha256",
+        "llm_model",
+        "embedding_model",
+        "embedding_dimensions",
+        "embedding_instruction_mode",
+        "linking_top_k",
+        "ppr_damping",
+        "passage_node_weight",
+        "synonym_threshold",
+    }
+)
+
+
+def index_config_hash(**params: str | int | float) -> str:
+    """Deterministic SHA-256 hash of the build-time index parameters.
+
+    The hash covers corpus, upstream, patch, OpenIE prompts, LLM/embedding
+    identifiers, and every retrieval / graph-build parameter.  It deliberately
+    **excludes** gate thresholds, sampling, statistics, and pricing fields
+    because they do not affect the stored index artefacts.
+
+    Parameters
+    ----------
+    params:
+        Keyword arguments whose keys must be a subset of the canonical set
+        (extra keys are ignored to allow forwarding ``**experiment_config``
+        dicts).  Every value is coerced to its string representation before
+        hashing.
+    """
+    filtered: dict[str, object] = {}
+    for key in sorted(params):
+        if key in _INDEX_PARAM_KEYS:
+            filtered[key] = params[key]
+    if not filtered:
+        raise ValueError("index_config_hash requires at least one recognised parameter")
+    payload = json.dumps(
+        filtered,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def index_directory(
+    dataset: str,
+    corpus_sha256: str,
+    upstream_sha: str,
+    llm_slug: str,
+    embedding_slug: str,
+    openie_prompt_sha256: str,
+    index_config_sha256: str,
+    *,
+    base: Path | None = None,
+) -> Path:
+    """Return the fingerprinted index directory.
+
+    Layout::
+
+        <base>/<dataset>/<corpus_sha12>/<upstream_sha12>/<llm_slug>/<embedding_slug>/<openie_prompt_sha12>/<index_config_sha12>/
+
+    where ``<sha12>`` abbreviates the first 12 hex characters of a full SHA-256.
+
+    Parameters
+    ----------
+    base:
+        Root directory.  Defaults to ``artifacts/indexes/`` under the
+        repository root.
+    """
+    if base is None:
+        base = Path(__file__).resolve().parents[2] / "artifacts" / "indexes"
+    return (
+        base
+        / dataset
+        / f"{corpus_sha256[:12]}"
+        / f"{upstream_sha[:12]}"
+        / llm_slug
+        / embedding_slug
+        / f"{openie_prompt_sha256[:12]}"
+        / f"{index_config_sha256[:12]}"
+    )
