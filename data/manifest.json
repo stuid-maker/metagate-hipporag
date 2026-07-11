@@ -1,0 +1,48 @@
+{
+  "files": [
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:24.299701+00:00",
+      "file": "data\\raw\\nq_rear.json",
+      "sha256": "8acadaeff625790e8e10764d660d9ec46de6ac24eb241ac584c0171deca1d9cd",
+      "size_bytes": 6969958,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/nq_rear.json"
+    },
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:26.137121+00:00",
+      "file": "data\\raw\\nq_rear_corpus.json",
+      "sha256": "c672a7c1813f1a3e1e7a0b1a29784bf7c5cf2d7a2934cb3ffc3b347843b42864",
+      "size_bytes": 6482997,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/nq_rear_corpus.json"
+    },
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:31.601257+00:00",
+      "file": "data\\raw\\musique.json",
+      "sha256": "98ed4e21d3076532f6388d42320fb809599c63a0d8dffca8ece5e41922be6b46",
+      "size_bytes": 12543629,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/musique.json"
+    },
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:33.408882+00:00",
+      "file": "data\\raw\\musique_corpus.json",
+      "sha256": "73157a03ce3f0b1a5673dd5dc12bb970c24976dbffc688af9eecdd758c97ffcb",
+      "size_bytes": 6239261,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/musique_corpus.json"
+    },
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:35.110944+00:00",
+      "file": "data\\raw\\2wikimultihopqa.json",
+      "sha256": "895cba294064df0c3302c76847b1fc08d99b5619f7663dfaa3b65cd780f1cac4",
+      "size_bytes": 6505789,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/2wikimultihopqa.json"
+    },
+    {
+      "downloaded_at_utc": "2026-07-11T12:34:37.216834+00:00",
+      "file": "data\\raw\\2wikimultihopqa_corpus.json",
+      "sha256": "9d6e352952aafb18dab22bf8195039461321a44a949df902ae83bce134ad238a",
+      "size_bytes": 3083943,
+      "url": "https://huggingface.co/datasets/osunlp/HippoRAG_2/resolve/5ec05b38deecc3318bb432c69865959c56058990/2wikimultihopqa_corpus.json"
+    }
+  ],
+  "generated_at_utc": "2026-07-11T12:34:37.217546+00:00",
+  "revision": "5ec05b38deecc3318bb432c69865959c56058990"
+}

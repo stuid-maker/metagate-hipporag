@@ -1,0 +1,46 @@
+[
+  {
+    "_id": "83bf3b5a0bd911eba7f7acde48001122",
+    "type": "compositional",
+    "question": "When did Lothair II's mother die?",
+    "answer": "20 March 851",
+    "supporting_facts": [
+      ["Lothair II", 1],
+      ["Ermengarde of Tours", 0]
+    ],
+    "context": [
+      ["Lothair II", ["Lothair II was a king.", "His mother was Ermengarde of Tours who died on 20 March 851."]],
+      ["Ermengarde of Tours", ["Ermengarde of Tours died on 20 March 851.", "She was the wife of Lothair I."]],
+      ["Noise Article", ["Not related.", "Also not related."]]
+    ]
+  },
+  {
+    "_id": "comparison_test_01",
+    "type": "comparison",
+    "question": "Compare city A and city B population?",
+    "answer": "City A has 1M, City B has 2M",
+    "supporting_facts": [
+      ["City A", 0],
+      ["City B", 1]
+    ],
+    "context": [
+      ["City A", ["City A population is 1 million.", "Located in Country X."]],
+      ["City B", ["City B is in Country Y.", "City B population is 2 million."]],
+      ["City C", ["Not relevant."]]
+    ]
+  },
+  {
+    "_id": "inference_test_01",
+    "type": "inference",
+    "question": "Infer the relationship between X and Y?",
+    "answer": "X is the father of Y",
+    "supporting_facts": [
+      ["Person X", 0],
+      ["Person Y", 0]
+    ],
+    "context": [
+      ["Person X", ["Person X had a son named Y."]],
+      ["Person Y", ["Person Y's father is X."]]
+    ]
+  }
+]

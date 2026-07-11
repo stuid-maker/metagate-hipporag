@@ -1,0 +1,18 @@
+[
+  {
+    "question": "who has the oldest team in the nba",
+    "reference": ["Sacramento Kings", "New York Knickerbockers"],
+    "contexts": [
+      {"title": "Eddie Gottlieb", "text": "The oldest teams include the Kings and Knicks.", "is_supporting": true},
+      {"title": "Philadelphia 76ers", "text": "Not the oldest.", "is_supporting": false}
+    ]
+  },
+  {
+    "question": "when did the first world war start",
+    "reference": ["1914"],
+    "contexts": [
+      {"title": "World War I", "text": "WWI started in 1914.", "is_supporting": true},
+      {"title": "World War II", "text": "WWII started in 1939.", "is_supporting": false}
+    ]
+  }
+]

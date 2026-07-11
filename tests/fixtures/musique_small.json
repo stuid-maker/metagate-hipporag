@@ -1,0 +1,37 @@
+[
+  {
+    "id": "2hop__1_2",
+    "question": "Who was the first president of the United States?",
+    "answer": "George Washington",
+    "answer_aliases": ["Washington"],
+    "paragraphs": [
+      {"idx": 0, "title": "George Washington", "paragraph_text": "George Washington was the first president.", "is_supporting": true},
+      {"idx": 1, "title": "Noise Article", "paragraph_text": "Some irrelevant text.", "is_supporting": false}
+    ]
+  },
+  {
+    "id": "3hop__5_6_7",
+    "question": "Who discovered penicillin and in which country?",
+    "answer": "Alexander Fleming, Scotland",
+    "answer_aliases": ["Fleming"],
+    "paragraphs": [
+      {"idx": 0, "title": "Alexander Fleming", "paragraph_text": "Fleming discovered penicillin.", "is_supporting": true},
+      {"idx": 1, "title": "Scotland", "paragraph_text": "Scotland is part of the UK.", "is_supporting": true},
+      {"idx": 2, "title": "Penicillin", "paragraph_text": "Penicillin is an antibiotic.", "is_supporting": true},
+      {"idx": 3, "title": "Noise", "paragraph_text": "Not relevant.", "is_supporting": false}
+    ]
+  },
+  {
+    "id": "4hop__10_11_12_13",
+    "question": "Four hop test question?",
+    "answer": "Answer",
+    "answer_aliases": [],
+    "paragraphs": [
+      {"idx": 0, "title": "Doc A", "paragraph_text": "Evidence A.", "is_supporting": true},
+      {"idx": 1, "title": "Doc B", "paragraph_text": "Evidence B.", "is_supporting": true},
+      {"idx": 2, "title": "Doc C", "paragraph_text": "Evidence C.", "is_supporting": true},
+      {"idx": 3, "title": "Doc D", "paragraph_text": "Evidence D.", "is_supporting": true},
+      {"idx": 4, "title": "Noise", "paragraph_text": "Noise.", "is_supporting": false}
+    ]
+  }
+]
