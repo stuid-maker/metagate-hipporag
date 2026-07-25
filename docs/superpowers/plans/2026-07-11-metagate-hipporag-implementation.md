@@ -51,7 +51,7 @@
 | 10 | Evaluation metrics | ✅ | `c83241d` |
 | 11 | Statistical tests (bootstrap, McNemar, Holm) | ✅ | `180b58a` |
 | 12 | CLI (metagate command) | ✅ | `9494249` |
-| 13 | Smoke tests + dev runs | ⬜ | — |
+| 13 | Smoke tests + dev runs | ✅ | `90f29be` |
 | 14 | Full test-set runs | ⬜ | — |
 | 15 | Paper (中文, 5000+ 字) | ⬜ | — |
 | 16 | PPT + narration | ⬜ | — |
