@@ -34,6 +34,28 @@
 | `results/` | Frozen, manifest-linked CSV tables and publication figures |
 | `paper/` / `slides/` | Final research report, bibliography, deck, narration script, and embedded audio |
 
+## 📊 Progress Tracker (updated 2026-07-25)
+
+| # | Task | Status | Commit |
+|---|------|--------|--------|
+| 0 | Environment & lock | ✅ | `a0befc1` |
+| 1 | Bootstrap upstream | ✅ | `ab72146` |
+| 2 | Contracts, config, provenance | ✅ | `ba4befa` |
+| 3 | Download & split data | ✅ | `b0d0aef` |
+| 4 | Cached OpenAI client | ✅ | `d6389bc` |
+| 5 | Batch OpenIE (two-stage) | ✅ | `a54e94d` |
+| 6 | Persistent embeddings | ✅ | `604f6c6` |
+| 7 | HippoRAG bridge + baseline | ✅ | `48d2435` |
+| 8 | MetaGate, RRF, threshold | ✅ | `db53a2e` |
+| 9 | Five-method resumable runner | ✅ | `a1e883f` |
+| 10 | Evaluation metrics | ✅ | `c83241d` |
+| 11 | Statistical tests (bootstrap, McNemar, Holm) | ✅ | `180b58a` |
+| 12 | CLI (metagate command) | ⬜ | — |
+| 13 | Smoke tests + dev runs | ⬜ | — |
+| 14 | Full test-set runs | ⬜ | — |
+| 15 | Paper (中文, 5000+ 字) | ⬜ | — |
+| 16 | PPT + narration | ⬜ | — |
+
 ## Task 0: Recover repository writes and lock the environment
 
 **Files:**
