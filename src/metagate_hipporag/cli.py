@@ -171,6 +171,7 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
 
     # --- initialise ledger ----------------------------------------------------
     ledger_path = repo / "artifacts" / "ledger" / "build_index.jsonl"
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
     ledger = UsageLedger(ledger_path, limit_usd=config.budget.project_max_actual_usd)
 
     # --- build embedding model ------------------------------------------------
