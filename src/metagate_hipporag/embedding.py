@@ -181,12 +181,19 @@ class PersistentOpenAIEmbeddingModel:
 
     # ── Cache primitives ────────────────────────────────────────────────
 
+    def _get_conn(self) -> sqlite3.Connection:
+        """Return a cached SQLite connection, creating one if needed."""
+        if not hasattr(self, "_conn") or self._conn is None:
+            self._conn = sqlite3.connect(str(self._cache_db_path))
+            self._conn.execute("PRAGMA journal_mode=WAL")
+        return self._conn
+
     def _lookup(self, key: str) -> np.ndarray | None:  # type: ignore[type-arg]
         """Return cached float32 vector or *None*."""
-        with sqlite3.connect(str(self._cache_db_path)) as conn:
-            row = conn.execute(
-                "SELECT vector, dimensions FROM embeddings WHERE key = ?", (key,)
-            ).fetchone()
+        conn = self._get_conn()
+        row = conn.execute(
+            "SELECT vector, dimensions FROM embeddings WHERE key = ?", (key,)
+        ).fetchone()
         if row is None:
             return None
         blob, dims = row
@@ -196,19 +203,19 @@ class PersistentOpenAIEmbeddingModel:
         """Persist a single vector to the cache."""
         text_sha256 = hashlib.sha256(raw_text.encode("utf-8")).hexdigest()
         vector_f32 = np.asarray(vector, dtype=np.float32)
-        with sqlite3.connect(str(self._cache_db_path)) as conn:
-            conn.execute(
-                "INSERT OR REPLACE INTO embeddings(key, model, text_sha256, vector, dimensions) "
-                "VALUES (?, ?, ?, ?, ?)",
-                (
-                    key,
-                    self.embedding_model_name,
-                    text_sha256,
-                    vector_f32.tobytes(),
-                    int(vector_f32.shape[0]),
-                ),
-            )
-            conn.commit()
+        conn = self._get_conn()
+        conn.execute(
+            "INSERT OR REPLACE INTO embeddings(key, model, text_sha256, vector, dimensions) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                key,
+                self.embedding_model_name,
+                text_sha256,
+                vector_f32.tobytes(),
+                int(vector_f32.shape[0]),
+            ),
+        )
+        conn.commit()
 
     # ── API call + ledger ───────────────────────────────────────────────
 
