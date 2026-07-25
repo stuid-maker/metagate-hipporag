@@ -7,7 +7,7 @@ project:
   preprocessing_version: 1
 
 models:
-  llm: gpt-4o-mini-2024-07-18
+  llm: gpt-4o-mini
   embedding: text-embedding-3-large
   embedding_dimensions: 3072
   embedding_instruction_mode: upstream_ignored

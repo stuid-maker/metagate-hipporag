@@ -54,6 +54,31 @@ class StructuredCompletion(Generic[T]):
     usage: Usage
 
 
+# ── JSON schema helpers -----------------------------------------------------
+
+
+def _fix_json_schema_for_strict(schema: dict[str, Any]) -> dict[str, Any]:
+    """Recursively add ``additionalProperties: false`` to every object node.
+
+    Required by OpenAI's ``strict`` structured-output mode, which some
+    proxy backends (e.g. gptsapi) enforce more rigorously than the
+    official API.  The schema is mutated in place.
+    """
+
+    def _recurse(node: Any) -> None:
+        if isinstance(node, dict):
+            if node.get("type") == "object":
+                node["additionalProperties"] = False
+            for v in node.values():
+                _recurse(v)
+        elif isinstance(node, list):
+            for item in node:
+                _recurse(item)
+
+    _recurse(schema)
+    return schema
+
+
 # ── Cache key ---------------------------------------------------------------
 
 # Fields that carry secrets and must be excluded from the canonical payload.
@@ -131,6 +156,9 @@ def _invoke_openai(**kwargs: Any) -> RawCompletion:
     client = OpenAI()
     started = time.perf_counter()
 
+    raw_schema = kwargs["response_model"].model_json_schema()
+    schema = _fix_json_schema_for_strict(raw_schema)
+
     response = client.chat.completions.create(
         model=kwargs["model"],
         messages=kwargs["messages"],
@@ -142,7 +170,7 @@ def _invoke_openai(**kwargs: Any) -> RawCompletion:
             "json_schema": {
                 "name": kwargs["response_model"].__name__.lower(),
                 "strict": True,
-                "schema": kwargs["response_model"].model_json_schema(),
+                "schema": schema,
             },
         },
     )

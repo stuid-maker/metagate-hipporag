@@ -87,18 +87,22 @@ def _cmd_prepare_openie(args: argparse.Namespace) -> int:
 
 
 def _cmd_build_index(args: argparse.Namespace) -> int:
-    """Build a fingerprinted HippoRAG index for one dataset."""
+    """Build a fingerprinted HippoRAG index for one dataset.
+
+    Uses the upstream *online* OpenIE path (synchronous LLM calls) since
+    gptsapi does not expose the Batch API.  OpenIE is produced and saved
+    inside ``save_dir`` during ``engine.index()``, not loaded from a
+    separate pre-computed file.
+    """
     from .config import load_config
     from .embedding import PersistentOpenAIEmbeddingModel, inject_embedding_model
     from .provenance import UsageLedger, index_config_hash, index_directory, sha256_file
 
     config = load_config(args.config)
     repo = _repo_root()
-
-    # --- validate prerequisites -----------------------------------------------
     dataset = args.dataset
 
-    # Corpus path
+    # --- validate prerequisites -----------------------------------------------
     corpus_path = repo / "data" / "raw" / f"{dataset}_corpus.json"
     if not corpus_path.exists():
         print(f"Corpus not found: {corpus_path}.  Run prepare-data first.", file=sys.stderr)
@@ -106,29 +110,25 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
 
     corpus_sha = sha256_file(corpus_path)
 
-    # OpenIE results
-    openie_path = (
-        repo / "artifacts" / "openie" / dataset
-        / "openie_results_ner_gpt-4o-mini-2024-07-18.json"
-    )
-    if not openie_path.exists():
-        print(
-            f"OpenIE results not found: {openie_path}.  Run prepare-openie first.",
-            file=sys.stderr,
-        )
-        return 1
+    # Load corpus documents (list of "title\\ntext" strings)
+    corpus_data = json.loads(corpus_path.read_text(encoding="utf-8"))
+    docs: list[str] = []
+    for item in corpus_data:
+        title = item.get("title", "")
+        text = item.get("text", "")
+        docs.append(f"{title}\n{text}")
 
-    openie_sha = sha256_file(openie_path)
+    print(f"Loaded {len(docs)} documents from {corpus_path.name}", file=sys.stderr)
 
     # --- compute hashes and directory -----------------------------------------
     upstream_sha = config.project.upstream_commit
     llm_slug = config.models.llm
     embedding_slug = config.models.embedding
 
-    # OpenIE prompt hash — use corpus + OpenIE result as proxy since
-    # the prompt content hash is tracked inside batch_openie's sidecar.
-    # In a full run the gate/qa prompts are also frozen; we reuse config_hash here.
-    openie_prompt_sha = openie_sha  # stable proxy
+    # Use a placeholder for OpenIE prompt hash at build time.
+    # The real hash is computed from the generated file after indexing
+    # and stored in the manifest so ``run`` can locate it.
+    openie_prompt_sha = "0" * 64  # placeholder — updated in manifest after build
 
     index_cfg_hash = index_config_hash(
         upstream_sha=upstream_sha,
@@ -194,9 +194,9 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
         price_per_million=config.pricing_snapshot.text_embedding_3_large_per_million,
     )
 
-    # --- lazy-import hipporag (requires upstream bootstrap) --------------------
+    # --- import hipporag (requires upstream bootstrap) ------------------------
     try:
-        from hipporag import HippoRAG  # type: ignore[import-untyped]
+        from hipporag.HippoRAG import HippoRAG  # type: ignore[import-untyped]
     except ImportError:
         print(
             "HippoRAG not importable.  Run scripts/bootstrap_upstream.py first.",
@@ -204,33 +204,44 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
         )
         return 1
 
-    # --- instantiate engine ---------------------------------------------------
-    # The upstream HippoRAG constructor accepts a global_config dict.
-    # We need to build one from our config.
-    global_config = {
-        "llm_name": llm_slug,
-        "llm_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-        "embedding_model_name": embedding_slug,
-        "embedding_dim": config.models.embedding_dimensions,
-        "embedding_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-        "linking_top_k": config.retrieval.linking_top_k,
-        "ppr_damping": config.retrieval.ppr_damping,
-        "passage_node_weight": config.retrieval.passage_node_weight,
-        "synonymity_threshold": config.retrieval.synonym_threshold,
-        "save_dir": str(index_dir),
-        "corpus_path": str(corpus_path),
-        "openie_path": str(openie_path),
-        "dataset_name": dataset,
-    }
+    from hipporag.utils.config_utils import BaseConfig
+
+    global_config = BaseConfig(
+        llm_name=llm_slug,
+        llm_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        embedding_model_name=embedding_slug,
+        embedding_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        linking_top_k=config.retrieval.linking_top_k,
+        damping=config.retrieval.ppr_damping,
+        passage_node_weight=config.retrieval.passage_node_weight,
+        synonymy_edge_sim_threshold=config.retrieval.synonym_threshold,
+        save_dir=str(index_dir),
+        openie_mode="online",
+        save_openie=True,
+    )
 
     engine = HippoRAG(global_config=global_config)
 
     # Inject our persistent embedding model
     inject_embedding_model(engine, embedding_model)
 
-    # --- build index ----------------------------------------------------------
+    # --- build index (includes online OpenIE) ---------------------------------
     print("Indexing ...", file=sys.stderr)
-    engine.index()
+    engine.index(docs)
+
+    # --- locate the generated OpenIE file ------------------------------------
+    # The upstream saves to: <save_dir>/openie_results_ner_<llm_name>.json
+    generated_openie = index_dir / f"openie_results_ner_{llm_slug}.json"
+    if generated_openie.exists():
+        openie_sha = sha256_file(generated_openie)
+    else:
+        # Fallback: search for any openie_results_ner_*.json
+        candidates = list(index_dir.glob("openie_results_ner_*.json"))
+        if candidates:
+            openie_sha = sha256_file(candidates[0])
+        else:
+            print("WARNING: no OpenIE output file found after indexing", file=sys.stderr)
+            openie_sha = "0" * 64
 
     # --- write manifest -------------------------------------------------------
     import time
@@ -239,6 +250,7 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
         "dataset": dataset,
         "corpus_sha256": corpus_sha,
         "openie_sha256": openie_sha,
+        "openie_prompt_sha256": openie_prompt_sha,
         "upstream_sha": upstream_sha,
         "upstream_version": config.project.upstream_package_version,
         "index_config_hash": index_cfg_hash,
@@ -428,17 +440,15 @@ def _cmd_run(args: argparse.Namespace) -> int:
             gate_threshold = float(th_data["threshold"])
             print(f"Using gate threshold: {gate_threshold}", file=sys.stderr)
 
-        # Build index directory
+        # Build index directory (matches the placeholder-based naming used by
+        # build-index; the real OpenIE hash is recorded in index_manifest.json).
         from .provenance import index_config_hash, index_directory, sha256_file
 
         corpus_path = repo / "data" / "raw" / f"{dataset}_corpus.json"
         corpus_sha = sha256_file(corpus_path)
 
-        openie_path = (
-            repo / "artifacts" / "openie" / dataset
-            / "openie_results_ner_gpt-4o-mini-2024-07-18.json"
-        )
-        openie_sha = sha256_file(openie_path) if openie_path.exists() else "0" * 64
+        # Use the same placeholder that build-index used for directory naming.
+        openie_sha = "0" * 64
 
         index_cfg_hash = index_config_hash(
             upstream_sha=config.project.upstream_commit,
@@ -473,26 +483,25 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
         # Initialise engine
         try:
-            from hipporag import HippoRAG  # type: ignore[import-untyped]
+            from hipporag.HippoRAG import HippoRAG  # type: ignore[import-untyped]
         except ImportError:
             print("HippoRAG not importable. Run bootstrap first.", file=sys.stderr)
             return 1
 
-        global_config = {
-            "llm_name": config.models.llm,
-            "llm_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-            "embedding_model_name": config.models.embedding,
-            "embedding_dim": config.models.embedding_dimensions,
-            "embedding_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-            "linking_top_k": config.retrieval.linking_top_k,
-            "ppr_damping": config.retrieval.ppr_damping,
-            "passage_node_weight": config.retrieval.passage_node_weight,
-            "synonymity_threshold": config.retrieval.synonym_threshold,
-            "save_dir": str(index_dir),
-            "corpus_path": str(corpus_path),
-            "openie_path": str(openie_path),
-            "dataset_name": dataset,
-        }
+        from hipporag.utils.config_utils import BaseConfig
+
+        global_config = BaseConfig(
+            llm_name=config.models.llm,
+            llm_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            embedding_model_name=config.models.embedding,
+            embedding_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            linking_top_k=config.retrieval.linking_top_k,
+            damping=config.retrieval.ppr_damping,
+            passage_node_weight=config.retrieval.passage_node_weight,
+            synonymy_edge_sim_threshold=config.retrieval.synonym_threshold,
+            save_dir=str(index_dir),
+            openie_mode="online",
+        )
 
         engine = HippoRAG(global_config=global_config)
 

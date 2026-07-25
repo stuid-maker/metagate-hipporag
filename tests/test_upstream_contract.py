@@ -34,7 +34,7 @@ class DeterministicFakeConfig:
     embedding_batch_size: int = 64
     embedding_base_url: str = "https://api.openai.com/v1"
     azure_embedding_endpoint: Any = None
-    llm_model_name: str = "gpt-4o-mini-2024-07-18"
+    llm_model_name: str = "gpt-4o-mini"
 
 
 class DeterministicFakeStore:

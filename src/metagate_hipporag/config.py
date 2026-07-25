@@ -28,7 +28,7 @@ class ProjectConfig(FrozenModel):
 
 
 class ModelConfig(FrozenModel):
-    llm: Literal["gpt-4o-mini-2024-07-18"]
+    llm: Literal["gpt-4o-mini"]
     embedding: Literal["text-embedding-3-large"]
     embedding_dimensions: Literal[3072]
     embedding_instruction_mode: Literal["upstream_ignored"]

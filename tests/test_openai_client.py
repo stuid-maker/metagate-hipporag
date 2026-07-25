@@ -28,7 +28,7 @@ def test_completion_is_schema_validated_and_cached(tmp_path: Path) -> None:
     client = CachedStructuredClient(tmp_path / "calls.sqlite", invoke=fake_invoke)
     first = client.complete(
         custom_id="gate-dataset-example",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "evidence"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -37,7 +37,7 @@ def test_completion_is_schema_validated_and_cached(tmp_path: Path) -> None:
     )
     second = client.complete(
         custom_id="gate-dataset-example",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "evidence"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -71,7 +71,7 @@ def test_cache_key_changes_with_prompt(tmp_path: Path) -> None:
     client = CachedStructuredClient(tmp_path / "calls2.sqlite", invoke=fake_invoke)
     first = client.complete(
         custom_id="gate-A",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "prompt version 1"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -80,7 +80,7 @@ def test_cache_key_changes_with_prompt(tmp_path: Path) -> None:
     )
     second = client.complete(
         custom_id="gate-B",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "prompt version 2"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -113,7 +113,7 @@ def test_cache_key_changes_with_model(tmp_path: Path) -> None:
     client = CachedStructuredClient(tmp_path / "calls3.sqlite", invoke=fake_invoke)
     client.complete(
         custom_id="m1",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "test"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -145,7 +145,7 @@ def test_malformed_json_raises_validation_error(tmp_path: Path) -> None:
     try:
         client.complete(
             custom_id="bad-json",
-            model="gpt-4o-mini-2024-07-18",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": "whatever"}],
             response_model=GateDecision,
             max_completion_tokens=256,
@@ -208,7 +208,7 @@ def test_cache_key_independent_of_custom_id(tmp_path: Path) -> None:
     )
     first = client.complete(
         custom_id="id-A",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "same prompt"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -217,7 +217,7 @@ def test_cache_key_independent_of_custom_id(tmp_path: Path) -> None:
     )
     second = client.complete(
         custom_id="id-B",  # different custom_id, same everything else
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "same prompt"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -289,7 +289,7 @@ def test_cache_hit_preserves_method_equivalent_cost(tmp_path: Path) -> None:
     client = CachedStructuredClient(tmp_path / "equiv.sqlite", invoke=fake_invoke)
     first = client.complete(
         custom_id="equiv-test",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "check"}],
         response_model=GateDecision,
         max_completion_tokens=256,
@@ -303,7 +303,7 @@ def test_cache_hit_preserves_method_equivalent_cost(tmp_path: Path) -> None:
 
     second = client.complete(
         custom_id="equiv-test-2",
-        model="gpt-4o-mini-2024-07-18",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": "check"}],
         response_model=GateDecision,
         max_completion_tokens=256,

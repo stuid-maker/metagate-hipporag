@@ -74,7 +74,7 @@ def test_make_custom_id_changes_with_input() -> None:
 def test_ner_requests_have_stable_unique_custom_ids() -> None:
     docs = {"chunk-a": "Title A\nBody A", "chunk-b": "Title B\nBody B"}
     rows = build_ner_requests(
-        docs, model="gpt-4o-mini-2024-07-18", seed=20260711,
+        docs, model="gpt-4o-mini", seed=20260711,
         prompt_hash="aa" * 32, config_hash="bb" * 32,
     )
     assert len(rows) == 2
@@ -93,7 +93,7 @@ def test_triple_requests_include_entities() -> None:
     docs = {"chunk-a": "Title A\nBody A"}
     ner_output = {"chunk-a": {"named_entities": ["Entity1", "Entity2"]}}
     rows = build_triple_requests(
-        docs, ner_output, model="gpt-4o-mini-2024-07-18", seed=20260711,
+        docs, ner_output, model="gpt-4o-mini", seed=20260711,
         prompt_hash="aa" * 32, config_hash="bb" * 32,
     )
     assert len(rows) == 1
@@ -151,7 +151,7 @@ def _make_row(custom_id: str, content: str, status: int = 200) -> dict:
                 "id": "chatcmpl-1",
                 "object": "chat.completion",
                 "created": 1752240000,
-                "model": "gpt-4o-mini-2024-07-18",
+                "model": "gpt-4o-mini",
                 "choices": [
                     {
                         "index": 0,
@@ -258,7 +258,7 @@ def test_pack_shards_respects_limit() -> None:
     """Each shard must not exceed the token limit."""
     requests = [_min_req(f"r{i}") for i in range(100)]
     shards = _pack_shards(
-        requests, model="gpt-4o-mini-2024-07-18", max_tokens_per_shard=5000
+        requests, model="gpt-4o-mini", max_tokens_per_shard=5000
     )
     assert len(shards) >= 2
     # Every request must appear exactly once across all shards
@@ -269,7 +269,7 @@ def test_pack_shards_respects_limit() -> None:
 def test_pack_shards_with_few_requests() -> None:
     requests = [_min_req("r0")]
     shards = _pack_shards(
-        requests, model="gpt-4o-mini-2024-07-18", max_tokens_per_shard=50000
+        requests, model="gpt-4o-mini", max_tokens_per_shard=50000
     )
     assert len(shards) == 1
     assert len(shards[0]) == 1
@@ -277,7 +277,7 @@ def test_pack_shards_with_few_requests() -> None:
 
 def test_estimate_request_tokens_is_positive() -> None:
     req = _min_req("x")
-    tokens = _estimate_request_tokens(req, model="gpt-4o-mini-2024-07-18")
+    tokens = _estimate_request_tokens(req, model="gpt-4o-mini")
     assert tokens > 0
     assert isinstance(tokens, int)
 

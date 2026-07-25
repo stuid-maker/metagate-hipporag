@@ -32,7 +32,7 @@ def test_config_is_frozen_and_hash_is_stable() -> None:
     first = load_config(Path("configs/experiment.yaml"))
     second = load_config(Path("configs/experiment.yaml"))
     assert first.config_hash == second.config_hash
-    assert first.models.llm == "gpt-4o-mini-2024-07-18"
+    assert first.models.llm == "gpt-4o-mini"
     assert first.sampling.dev_per_dataset == 100
     assert first.sampling.test_per_dataset == 300
     assert first.budget.project_max_actual_usd == 18.0
@@ -254,7 +254,7 @@ def _make_entry(
         "event_id": event_id,
         "reservation_id": reservation_id,
         "stage": "qa",
-        "model": "gpt-4o-mini-2024-07-18",
+        "model": "gpt-4o-mini",
         "prompt_tokens": 100,
         "completion_tokens": 50,
         "cache_hit": (actual_usd == 0.0),

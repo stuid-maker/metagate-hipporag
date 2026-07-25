@@ -198,7 +198,7 @@ class HippoRAGBridge:
         dataset: str | None = None,
         example_id: str | None = None,
         method: str | None = None,
-        llm_model_name: str = "gpt-4o-mini-2024-07-18",
+        llm_model_name: str = "gpt-4o-mini",
     ) -> RetrievalTrace:
         """Run ``retrieve_with_trace`` and record LLM usage in the ledger.
 

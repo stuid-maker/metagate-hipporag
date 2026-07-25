@@ -999,7 +999,7 @@ def main(argv: list[str] | None = None) -> int:
             docs = json.loads(source_path.read_text(encoding="utf-8"))
 
             exported = export_upstream_openie(docs, ner_results, triple_results)
-            export_path = workspace / "openie_results_ner_gpt-4o-mini-2024-07-18.json"
+            export_path = workspace / "openie_results_ner_gpt-4o-mini.json"
             tmp = export_path.with_suffix(".tmp")
             tmp.write_text(
                 json.dumps(exported, ensure_ascii=False, indent=2) + "\n",

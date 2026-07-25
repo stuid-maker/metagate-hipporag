@@ -267,7 +267,7 @@ class MetaGate:
         threshold: float,
         *,
         max_expansions: int = 1,
-        model: str = "gpt-4o-mini-2024-07-18",
+        model: str = "gpt-4o-mini",
         seed: int = 20260711,
         temperature: float = 0.0,
         max_tokens: int = 256,
