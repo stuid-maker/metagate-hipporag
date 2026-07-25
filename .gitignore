@@ -25,6 +25,7 @@ artifacts/batch/
 artifacts/cache/
 artifacts/indexes/
 artifacts/runs/
+artifacts/smoke/
 artifacts/tmp/
 *.sqlite
 *.sqlite-lock
