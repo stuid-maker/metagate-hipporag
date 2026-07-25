@@ -24,6 +24,7 @@ data/processed/
 artifacts/batch/
 artifacts/cache/
 artifacts/indexes/
+artifacts/ledger/
 artifacts/runs/
 artifacts/smoke/
 artifacts/tmp/
