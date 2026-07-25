@@ -20,8 +20,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 
@@ -175,12 +177,19 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
     print(f"Building index for {dataset} → {index_dir}", file=sys.stderr)
 
     embedding_cache_path = repo / "artifacts" / "cache" / "embeddings.db"
-    embedding_model = PersistentOpenAIEmbeddingModel(
-        cache_path=embedding_cache_path,
+    emb_global_config = SimpleNamespace(
         embedding_model_name=embedding_slug,
+        embedding_return_as_normalized=True,
+        embedding_max_seq_len=8192,
+        embedding_batch_size=64,
+        embedding_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        azure_embedding_endpoint=None,
+    )
+    embedding_model = PersistentOpenAIEmbeddingModel(
+        emb_global_config,
+        cache_db_path=embedding_cache_path,
         dimensions=config.models.embedding_dimensions,
         instruction_mode=config.models.embedding_instruction_mode,
-        api_key=args.api_key or None,
         ledger=ledger,
         price_per_million=config.pricing_snapshot.text_embedding_3_large_per_million,
     )
@@ -200,8 +209,10 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
     # We need to build one from our config.
     global_config = {
         "llm_name": llm_slug,
+        "llm_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         "embedding_model_name": embedding_slug,
         "embedding_dim": config.models.embedding_dimensions,
+        "embedding_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         "linking_top_k": config.retrieval.linking_top_k,
         "ppr_damping": config.retrieval.ppr_damping,
         "passage_node_weight": config.retrieval.passage_node_weight,
@@ -469,8 +480,10 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
         global_config = {
             "llm_name": config.models.llm,
+            "llm_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             "embedding_model_name": config.models.embedding,
             "embedding_dim": config.models.embedding_dimensions,
+            "embedding_base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             "linking_top_k": config.retrieval.linking_top_k,
             "ppr_damping": config.retrieval.ppr_damping,
             "passage_node_weight": config.retrieval.passage_node_weight,
@@ -485,12 +498,19 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
         from .embedding import PersistentOpenAIEmbeddingModel, inject_embedding_model
         embedding_cache = repo / "artifacts" / "cache" / "embeddings.db"
-        emb_model = PersistentOpenAIEmbeddingModel(
-            cache_path=embedding_cache,
+        emb_global_config_run = SimpleNamespace(
             embedding_model_name=config.models.embedding,
+            embedding_return_as_normalized=True,
+            embedding_max_seq_len=8192,
+            embedding_batch_size=64,
+            embedding_base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            azure_embedding_endpoint=None,
+        )
+        emb_model = PersistentOpenAIEmbeddingModel(
+            emb_global_config_run,
+            cache_db_path=embedding_cache,
             dimensions=config.models.embedding_dimensions,
             instruction_mode=config.models.embedding_instruction_mode,
-            api_key=args.api_key or None,
             ledger=ledger,
             price_per_million=config.pricing_snapshot.text_embedding_3_large_per_million,
         )

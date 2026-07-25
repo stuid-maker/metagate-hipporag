@@ -515,6 +515,28 @@ def _compute_upstream_chunk_id(passage: str) -> str:
     return f"chunk-{digest}"
 
 
+def _load_corpus_as_docs(source_path: Path) -> dict[str, str]:
+    """Load a corpus file (list of {title, text}) as a chunk-id → passage dict.
+
+    Passage format: ``title\\ntext`` (title + newline + body).
+    Chunk-id format: ``chunk-<md5-of-passage>`` (upstream convention).
+    """
+    raw = json.loads(source_path.read_text(encoding="utf-8"))
+    if isinstance(raw, dict):
+        # Already in the right format (e.g. for smoke tests).
+        return {k: v for k, v in raw.items() if isinstance(v, str)}
+
+    docs: dict[str, str] = {}
+    for item in raw:
+        if isinstance(item, dict) and "title" in item and "text" in item:
+            passage = f"{item['title']}\n{item['text']}"
+            chunk_id = _compute_upstream_chunk_id(passage)
+            docs[chunk_id] = passage
+    if not docs:
+        raise ValueError(f"No valid documents found in {source_path}")
+    return docs
+
+
 def export_upstream_openie(
     docs: dict[str, str],
     ner_results: dict[str, dict[str, Any]],
@@ -818,9 +840,9 @@ def main(argv: list[str] | None = None) -> int:
     triple_prompt_sha = _prompt_sha(triple_template)
 
     if args.command == "prepare":
-        # Load source docs
+        # Load source docs — corpus is a list of {title, text}, convert to chunk-id → passage
         source_path = Path(args.source)
-        docs: dict[str, str] = json.loads(source_path.read_text(encoding="utf-8"))
+        docs: dict[str, str] = _load_corpus_as_docs(source_path)
 
         if args.phase == "ner":
             requests = build_ner_requests(

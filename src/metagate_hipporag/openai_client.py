@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sqlite3
 import time
 import uuid
@@ -223,7 +224,7 @@ class CachedStructuredClient:
 
         schema = response_model.model_json_schema()
         payload: dict[str, Any] = {
-            "base_url": "https://api.openai.com/v1",
+            "base_url": os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
             "model": model,
             "messages": messages,
             "schema": schema,
