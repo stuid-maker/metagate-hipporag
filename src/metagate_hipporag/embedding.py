@@ -21,6 +21,8 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from openai import RateLimitError as OpenAIRateLimitError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from .models import LedgerEntry
 from .provenance import UsageLedger
@@ -210,6 +212,12 @@ class PersistentOpenAIEmbeddingModel:
 
     # ── API call + ledger ───────────────────────────────────────────────
 
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(multiplier=1, min=2, max=60),
+        retry=retry_if_exception_type(OpenAIRateLimitError),
+        reraise=True,
+    )
     def _call_api(self, preprocessed: list[str]) -> tuple[np.ndarray, int]:  # type: ignore[type-arg]
         """Call the real OpenAI embeddings endpoint and return (vectors, total_tokens)."""
         response = self.client.embeddings.create(
@@ -372,6 +380,9 @@ class PersistentOpenAIEmbeddingModel:
             batch = texts[i : i + batch_size]
             # Our encode() handles caching — no need for upstream's bare except/ipdb.
             chunks.append(self.encode(batch))
+            # Brief pause between batches to stay under rate limits.
+            if i + batch_size < len(texts):
+                time.sleep(0.2)
 
         results = np.concatenate(chunks, axis=0)
 
