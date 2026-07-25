@@ -171,7 +171,7 @@ def _cmd_build_index(args: argparse.Namespace) -> int:
 
     # --- initialise ledger ----------------------------------------------------
     ledger_path = repo / "artifacts" / "ledger" / "build_index.jsonl"
-    ledger = UsageLedger(ledger_path)
+    ledger = UsageLedger(ledger_path, limit_usd=config.budget.project_max_actual_usd)
 
     # --- build embedding model ------------------------------------------------
     print(f"Building index for {dataset} → {index_dir}", file=sys.stderr)
@@ -404,7 +404,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     ledger_path = repo / "artifacts" / "ledger" / f"run_{method}_{dataset}_{split}.jsonl"
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     from .provenance import UsageLedger
-    ledger = UsageLedger(ledger_path)
+    ledger = UsageLedger(ledger_path, limit_usd=config.budget.project_max_actual_usd)
 
     cache_path = repo / "artifacts" / "cache" / "completions.db"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
