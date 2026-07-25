@@ -50,7 +50,7 @@
 | 9 | Five-method resumable runner | ✅ | `a1e883f` |
 | 10 | Evaluation metrics | ✅ | `c83241d` |
 | 11 | Statistical tests (bootstrap, McNemar, Holm) | ✅ | `180b58a` |
-| 12 | CLI (metagate command) | ⬜ | — |
+| 12 | CLI (metagate command) | ✅ | `9494249` |
 | 13 | Smoke tests + dev runs | ⬜ | — |
 | 14 | Full test-set runs | ⬜ | — |
 | 15 | Paper (中文, 5000+ 字) | ⬜ | — |
